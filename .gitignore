@@ -1,0 +1,7 @@
+client-server-prof/
+__pycache__/
+
+.DS_Store
+
+server.txt
+client.txt
