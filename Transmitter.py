@@ -1,7 +1,7 @@
 import socket, struct, time, struct, sys, binascii
 from copy import deepcopy
 import utils
-from SlidingWindow import SlidingWindow
+from ClientSlidingWindow import SlidingWindow
 
 class Transmitter:  
     '''
@@ -36,7 +36,7 @@ class Transmitter:
     
     def send_packet(self, packet):
         unpacked = struct.unpack('!Q', packet[0:8])
-        print('Sending packet: ' + str(unpacked[0]))
+        # print('Sending packet: ' + str(unpacked[0]))
 
         sent = self.udp.sendto(packet, self.address)
         if sent == 0:
@@ -47,8 +47,11 @@ class Transmitter:
 
 
     def resend_packet(self, element):
-        print('Resending packet: ' + str(element.sequence_number))
-        print()
+        # print('Resending packet: ' + str(element.sequence_number))
+
+        if(element.ack): 
+            return
+            
         packet = deepcopy(element.packet)
         if (utils.compare_error(self.p_error)):
             packet = utils.corrupt_md5(packet)
@@ -66,14 +69,11 @@ class Transmitter:
         unpacked = struct.unpack('! Q Q L', ack[0:20])
 
         element = self.window.find_in_list(unpacked[0])
-        if (element == None):
-            raise RuntimeError("Trying to ack a packet that is not in the list")
-
-        if (utils.check_md5(ack[0:20], ack[20:36])):
-            print('Received ack: ' + str(unpacked[0]))
-            print()
-            element.set_ack()
-        else:
-            self.resend_packet(element)
+        if (element != None):
+            if (utils.check_md5(ack[0:20], ack[20:36])):
+                # print('Received ack: ' + str(unpacked[0]))
+                element.set_ack()
+            else:
+                self.resend_packet(element)
         
 

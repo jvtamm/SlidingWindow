@@ -1,4 +1,6 @@
 client-server-prof/
+mc/
+
 __pycache__/
 
 .DS_Store
@@ -6,3 +8,5 @@ __pycache__/
 server.txt
 client.txt
 logfile
+input
+output

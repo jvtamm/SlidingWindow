@@ -14,9 +14,8 @@ def check_md5(data, md5):
     return md5 == generated_md5
 
 def corrupt_md5(packet):
-    print('Message generated with incorrect MD5')
     packet = bytearray(packet)
-    packet[-1] = packet[-1] + 1
+    packet[-1] = (packet[-1] + 1) % 256
     packet = bytes(packet)
 
     return packet

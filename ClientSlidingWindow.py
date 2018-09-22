@@ -32,10 +32,14 @@ class SlidingWindow:
 
     def find_in_list(self, sequence_number):
         for element in self.buffer:
-            if element.sequence_number == sequence_number:
+            if(element.sequence_number == sequence_number):
                 return element
         
         return None
+
+    def print_list(self):
+        for element in self.buffer:
+            print(element.sequence_number, element.ack)
     
     def check_all_acks(self):
         for element in self.buffer:
