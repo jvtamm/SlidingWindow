@@ -26,12 +26,15 @@ def main(argv):
         # print('Printing now...')
         # client.print_window()
         position = 0
+
+        receiver.lock.acquire()
+
         iterator = client.window.buffer[position]
         while(iterator.message != None):
             with open(argv[1], "a") as output:
                 # client.print_window()
                 # print()
-                output.write(iterator.message)
+                output.write(iterator.message + '\n')
             
             # Should slide window
             position += 1
@@ -42,10 +45,7 @@ def main(argv):
         
         client.window.slide_window(position)
 
+        receiver.lock.release()
+
 if __name__ == '__main__':
     main(argv)
-
-
-
-
-# If it is and is the next to be written in the file just write and send ack else just insert in the siding window and send ack

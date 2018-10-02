@@ -5,7 +5,8 @@ class Client:
     def __init__(self, window_size, address):
         self.address = address
         self.window = ServerSlidingWindow(window_size)
-        # self.timer
+        # self.timer = Timer(60.0, handler, [self.address])
+
     
     def save_message(self, message, sequence_number):
         for element in self.window.buffer:

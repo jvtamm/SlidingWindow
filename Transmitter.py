@@ -1,5 +1,6 @@
 import socket, struct, time, struct, sys, binascii
 from copy import deepcopy
+from threading import Lock
 import utils
 from ClientSlidingWindow import SlidingWindow
 
@@ -13,6 +14,9 @@ class Transmitter:
         self.p_error = p_error
         self.timeout = timeout
         self.address = (host, port)
+
+        self.lock = Lock()
+        self.message_lock = Lock()
 
         self.messages = 0   #stores the amount of different messages sent
         self.messages_sent = 0  #stores the amount of messages sent - includes retrasnmition
@@ -35,7 +39,7 @@ class Transmitter:
         return packet + error_code
     
     def send_packet(self, packet):
-        unpacked = struct.unpack('!Q', packet[0:8])
+        # unpacked = struct.unpack('!Q', packet[0:8])
         # print('Sending packet: ' + str(unpacked[0]))
 
         sent = self.udp.sendto(packet, self.address)
@@ -43,7 +47,10 @@ class Transmitter:
             raise RuntimeError("Failed to send the packet")
         
         self.messages += 1
+
+        self.message_lock.acquire()
         self.messages_sent += 1
+        self.message_lock.release()
 
 
     def resend_packet(self, element):
@@ -55,14 +62,19 @@ class Transmitter:
         packet = deepcopy(element.packet)
         if (utils.compare_error(self.p_error)):
             packet = utils.corrupt_md5(packet)
+            self.lock.acquire()
             self.incorrect_messages += 1
+            self.lock.release()
         
         sent = self.udp.sendto(packet, self.address)
         if sent == 0:
             raise RuntimeError("Failed to send the packet")
         
         element.reset_timer(self.timeout, self.resend_packet)
+
+        self.message_lock.acquire()
         self.messages_sent += 1
+        self.message_lock.release()
     
     def handle_ack(self):
         ack = self.udp.recv(36)

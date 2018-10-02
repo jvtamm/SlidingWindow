@@ -19,6 +19,8 @@ class Receiver:
         message_end = 22 + unpacked[3]
         message_body = message[22:message_end].decode('ascii')
         
+        self.lock.acquire()
+
         client = self.find_client_in_list(address)
         if(client == None):
             # print('Client not in list')
@@ -29,20 +31,24 @@ class Receiver:
                 # print('resend ack, seq_num:' + str(unpacked[0]))
                 self.handle_ack(unpacked[0], address)
             elif(unpacked[0] > client.window.buffer[-1].sequence_number):
-                print('Ignore, out of window, seq_num: ' + str(unpacked[0]))
+                # print('Ignore, out of window, seq_num: ' + str(unpacked[0]))
+                status = 'Out of window'
             else:
-                print('Sending ack to: ' + str(unpacked[0]))
+                # print('Sending ack to: ' + str(unpacked[0]))
                 client.save_message(message_body, unpacked[0])
                 self.handle_ack(unpacked[0], address)      
-        else:
-            print('Ignore, md5 is wrong, seq_num:' + str(unpacked[0]))
+        # else:
+        #     print('Ignore, md5 is wrong, seq_num:' + str(unpacked[0]))
+
+        self.lock.release()
         
         return client
 
     def handle_ack(self, sequence_number, address):
         period = time.time()
-        seconds = int(time.time())
+        seconds = int(period)
         nanoseconds = int((period - seconds) * (10**9))
+
         ack = struct.pack('! Q Q L', sequence_number, seconds, nanoseconds)
 
 
@@ -57,22 +63,22 @@ class Receiver:
 
     
     def find_client_in_list(self, address):
-        self.lock.acquire()
+        # self.lock.acquire()
 
         for client in self.client_list:
             if(client.address == address):
-                self.lock.release()
+                # self.lock.release()
                 return client
 
-        self.lock.release()
+        # self.lock.release()
         return None
     
     def create_client_in_list(self, address):
         # print('Inserting client in list...')
         client = Client(self.window_size, address)
-        self.lock.acquire()
+        # self.lock.acquire()
         self.client_list.append(client)
-        self.lock.release()
+        # self.lock.release()
         
         return client
         

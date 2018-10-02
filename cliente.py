@@ -12,17 +12,19 @@ def main(argv):
     # transmitter.udp.bind((socket.gethostname(), 3000))
 
     with open(argv[1]) as fp:
-        sequence_number = 1
+        sequence_number = 0
         for line in fp: 
-            # packet = transmitter.mount_packet(sequence_number, line.split('\n')[0])
-            packet = transmitter.mount_packet(sequence_number, line)
+            packet = transmitter.mount_packet(sequence_number, line.split('\n')[0])
+            # packet = transmitter.mount_packet(sequence_number, line)
 
             window_element = SlidingWindowElement(packet, sequence_number, transmitter.timeout, transmitter.resend_packet)
             transmitter.window.insert(window_element)  # insere na janela
     
             if (utils.compare_error(transmitter.p_error)):
                 packet = utils.corrupt_md5(packet)
+                transmitter.lock.acquire()
                 transmitter.incorrect_messages += 1
+                transmitter.lock.release()
 
             transmitter.send_packet(packet)
             window_element.timer.start()    # seta timeout
@@ -31,12 +33,6 @@ def main(argv):
             if (transmitter.window.current_size == transmitter.window.window_size):
                 while(not transmitter.window.buffer[0].ack):
                     transmitter.handle_ack()
-
-            # transmitter.window.print_list()
-            # print()
-            # se tamanho atual da janela = tamanho maximo espere a primeira mensagem receber o ack
-            # checa md5 e desliza a janela
-            # lembrar de setar ack para mensagens recebidas fora de ordem
     
     while(not transmitter.window.check_all_acks()):
         transmitter.handle_ack()

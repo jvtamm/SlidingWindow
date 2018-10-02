@@ -11,12 +11,12 @@ class ServerSlidingWindow:
         self.buffer = collections.deque(maxlen=window_size)
         self.current_size = 0
 
-        for i in range(1, self.window_size + 1):
+        for i in range(0, self.window_size):
             element = SlidingWindowElement(i)
             self.buffer.append(element)
     
     def slide_window(self, quantity):
-        for _ in range(quantity):
+        for _ in range(0, quantity):
             next_sequence_number = self.buffer[-1].sequence_number + 1
             next_element = SlidingWindowElement(next_sequence_number)
 

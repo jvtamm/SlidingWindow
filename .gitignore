@@ -5,8 +5,9 @@ __pycache__/
 
 .DS_Store
 
-server.txt
-client.txt
-logfile
-input
-output
+InOut/
+
+Documentation/time.png
+Documentation/retransmission.png
+
+Joao_Victor_Tamm2016006638.zip
